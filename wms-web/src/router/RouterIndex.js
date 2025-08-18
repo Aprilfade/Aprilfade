@@ -1,54 +1,37 @@
 import VueRouter from 'vue-router';
+import MyHome from '../components/MyHome.vue';
 
-
-
-const routes =[
+const routes = [
     {
-        path:'/',
-        name:'login',
-        component:()=>import('../components/MyLogin.vue')
+        path: '/',
+        name: 'login',
+        component: () => import('../components/MyLogin.vue')
     },
     {
-        path:'/HomeIndex',
-        name:'HomeIndex',
-        component:()=>import('../components/HomeIndex.vue'),
-        children:[
-            {
-                path:'/MyHome',
-                name:'MyHome',
-                component:()=>import('../components/MyHome.vue')
-            },
-           /* {
-                path:'/MyAdmin',
-                name:'Myadmin',
-                meta:{
-                    title:'管理员管理'
-                },
-                component:()=>import('../components/admin/MyAdmin.vue')
-            },
-            {
-                path:'/MyUser',
-                name:'Myuser',
-                meta:{
-                    title:'用户管理'
-                },
-                component:()=>import('../components/user/MyUser.vue')
-            },*/
+        path: '/home',
+        // 注意：父级路由不设置 name，以避免 vue-router 的警告
+        component: MyHome,
+        children: [
+            // 子路由将由 StoreIndex.js 动态添加
         ]
     }
-]
+];
+
 const router = new VueRouter({
-    mode:'history',
+    mode: 'history',
     routes
-})
-export function resetRouter(){
-    router.matcher =new VueRouter({
-        mode:'history',
-        routes:[]
-    }).matcher
+});
+
+export function resetRouter() {
+    router.matcher = new VueRouter({
+        mode: 'history',
+        routes: []
+    }).matcher;
 }
-const VueRouterPush = VueRouter.prototype.push
-VueRouter.prototype.push = function push (to) {
-    return VueRouterPush.call(this, to).catch(err => err)
-}
+
+const VueRouterPush = VueRouter.prototype.push;
+VueRouter.prototype.push = function push(to) {
+    return VueRouterPush.call(this, to).catch(err => err);
+};
+
 export default router;

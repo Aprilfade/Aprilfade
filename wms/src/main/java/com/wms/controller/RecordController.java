@@ -12,10 +12,7 @@ import com.wms.entity.Record;
 import com.wms.service.GoodsService;
 import com.wms.service.RecordService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 
@@ -79,5 +76,12 @@ public class RecordController {
         goodsService.updateById(goods);
 
         return recordService.save(record)?Result.suc():Result.fail();
+    }
+    // 在 RecordController.java 文件中添加以下方法
+
+    @GetMapping("/count")
+    public Result count() {
+        long count = recordService.count();
+        return Result.suc(count);
     }
 }

@@ -62,4 +62,11 @@ public class GoodsController {
         IPage result = goodsService.pageCC(page,lambdaQueryWrapper);
         return Result.suc(result.getRecords(),result.getTotal());
     }
+    // 在 GoodsController.java 文件中添加以下方法
+
+    @GetMapping("/count")
+    public Result count() {
+        long count = goodsService.count();
+        return Result.suc(count);
+    }
 }

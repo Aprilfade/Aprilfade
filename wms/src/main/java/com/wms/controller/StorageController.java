@@ -61,4 +61,11 @@ public class StorageController {
         List list = storageService.list();
         return Result.suc(list);
     }
+    // 在 StorageController.java 文件中添加以下方法
+
+    @GetMapping("/count")
+    public Result count() {
+        long count = storageService.count();
+        return Result.suc(count);
+    }
 }

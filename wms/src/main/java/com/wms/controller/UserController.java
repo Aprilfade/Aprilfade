@@ -134,28 +134,12 @@ public class UserController {
 
 
     }
-//    @PostMapping("/listPageC")
-//    public IPage<User> listPageC(@RequestBody QueryPageParam query) {
-//        HashMap param = query.getParam();
-//        String name = (String) param.get("name");
-//        System.out.println("name===" + name);
-//
-//
-//
-//        Page<User> page = new Page<>(query.getPageNum(), query.getPageSize());
-//
-//        // 修正1：使用 QueryWrapper 并正确初始化
-//        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
-//        if (name != null && !name.isEmpty()) {
-//            queryWrapper.like("name", name); // 条件字段使用数据库实际字段名
-//        }
-//
-//        // 修正2：调用 pageCC 方法，传入正确的 QueryWrapper 实例
-//        IPage<User> result = userService.pageCC(page, queryWrapper);
-//        System.out.println("total==" + result.getTotal());
-//
-//        return result;
-//    }
+
+    @GetMapping("/count")
+    public Result count() {
+        long count = userService.count();
+        return Result.suc(count);
+    }
 
     @PostMapping("/listPageC1")
     public Result listPageC1(@RequestBody QueryPageParam query) {

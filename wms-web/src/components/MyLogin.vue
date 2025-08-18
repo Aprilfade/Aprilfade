@@ -28,6 +28,7 @@ export default {
   name: "MyLogin",
   data(){
     return{
+      loading: false, // <--- 添加这一行
       confirm_disabled:false,
       loginForm:{
         no:'',
@@ -50,6 +51,7 @@ export default {
     // 登录后跳转到主页
     confirm(){
       this.confirm_disabled=true;
+      this.loading = true; // <--- 在请求前开启
       this.$refs.loginForm.validate((valid) => {
         if (valid) { //valid成功为true，失败为false
           //去后台验证用户名密码，并返回token
@@ -62,14 +64,16 @@ export default {
               console.log(res.data.data.menu)
               this.$store.commit("setMenu",res.data.data.menu)
               //跳转到主页
-              this.$router.replace('/HomeIndex');
+              this.$router.replace('/home');
             }else{
+              this.loading = false; // <--- 在请求失败后关闭
               this.confirm_disabled=false;
               alert('用户名或密码错误！');
               return false;
             }
           });
         } else {
+          this.loading = false; // <--- 在验证失败后关闭
           this.confirm_disabled=false;
           console.log('校验失败');
           return false;
