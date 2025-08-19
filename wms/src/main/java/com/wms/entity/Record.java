@@ -13,14 +13,8 @@ import lombok.EqualsAndHashCode;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
-/**
- * <p>
- * 
- * </p>
- *
- * @author wms
- * @since 2022-10-16
- */
+
+
 @Data
 @EqualsAndHashCode(callSuper = false)
 @ApiModel(value="Record对象", description="")

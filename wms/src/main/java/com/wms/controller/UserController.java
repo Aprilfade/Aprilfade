@@ -105,20 +105,15 @@ public class UserController {
     }
 
     @PostMapping ("/listPage")
-    //public List<User> listPage(@RequestBody HashMap map) {
+
     public List<User> listPage(@RequestBody QueryPageParam query) {
 
 
-        /*System.out.println("num==="+query.getPageNum());
-        System.out.println("size==="+query.getPageSize());*/
         
         HashMap param = query.getParam();
         String name =(String)param.get("name");
         System.out.println("name==="+(String)param.get("name"));
-        /*System.out.println("no==="+(String)param.get("no"));*/
-        //LambdaQueryWrapper<User> lambdaQueryWrapper=new LambdaQueryWrapper();
-        //lambdaQueryWrapper.eq(User::getName,user.getName());
-        //return userService.list(lambdaQueryWrapper);
+
         Page<User> page=new Page();
         page.setCurrent(query.getPageNum());
         page.setSize(query.getPageSize());
