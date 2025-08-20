@@ -60,16 +60,18 @@ public class UserController {
     }
 
     //登录
+    //登录
     @PostMapping("/login")
     public Result login(@RequestBody User user){
-        List list = userService.lambdaQuery()
-                .eq(User::getNo,user.getNo())
+        List<User> list = userService.lambdaQuery()
+                .eq(User::getName,user.getName())
                 .eq(User::getPassword,user.getPassword()).list();
 
 
         if(list.size()>0){
-            User user1 = (User)list.get(0);
-            List menuList = menuService.lambdaQuery().like(Menu::getMenuright,user1.getRoleId()).list();
+            User user1 = list.get(0);
+            // 修改了这里的方法引用，将 getMenuright 改为 getMenuRight
+            List menuList = menuService.lambdaQuery().like(Menu::getMenuRight,user1.getRoleId()).list();
             HashMap res = new HashMap();
             res.put("user",user1);
             res.put("menu",menuList);
@@ -109,7 +111,7 @@ public class UserController {
     public List<User> listPage(@RequestBody QueryPageParam query) {
 
 
-        
+
         HashMap param = query.getParam();
         String name =(String)param.get("name");
         System.out.println("name==="+(String)param.get("name"));
