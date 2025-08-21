@@ -1,78 +1,51 @@
-import { createRouter, createWebHistory } from 'vue-router';
-import store from '../store/StoreIndex';
+import { createRouter, createWebHistory } from 'vue-router'
+import Home from '../components/MyHome.vue'
+import Login from '../components/MyLogin.vue'
 
-// 初始路由规则
 const routes = [
     {
         path: '/',
-        name: 'MyHome',
-        component: () => import('../components/MyHome.vue'),
-        redirect: '/Home', // 默认重定向到首页
+        name: 'login',
+        component: Login
+    },
+    {
+        path: '/Home',
+        name: 'home',
+        component: Home,
+        redirect: '/Home/MyMain',
         children: [
             {
-                path: 'Home', // 子路由路径不应以'/'开头
-                name: 'Home',
+                path: '/Home/MyMain',
+                name: 'MyMain',
                 meta: {
                     title: '首页'
                 },
-                component: () => import('../components/HomeIndex.vue')
-            }
+                component: () => import('../components/MyMain.vue')
+            },
+            {
+                path: '/admin/MyAdmin',
+                name: 'admin_myadmin',
+                meta: {
+                    title: '管理员管理'
+                },
+                component: () => import('../components/admin/MyAdmin.vue')
+            },
+            {
+                path: '/user/MyUser',
+                name: 'user_myuser',
+                meta: {
+                    title: '用户管理'
+                },
+                component: () => import('../components/user/MyUser.vue')
+            },
+            // ... 你其他的路由也需要放在这里
         ]
-    },
-    {
-        path: '/login',
-        name: 'MyLogin',
-        component: () => import('../components/MyLogin.vue')
     }
-];
+]
 
 const router = createRouter({
-    history: createWebHistory(import.meta.env.BASE_URL),
+    history: createWebHistory(), // process.env.BASE_URL 在 Vite 中不常用，通常直接用 createWebHistory()
     routes
-});
+})
 
-// 标记是否已经添加了动态路由
-let hasAddedRoutes = false;
-
-// 路由前置守卫
-router.beforeEach((to, from, next) => {
-    const user = sessionStorage.getItem("CurUser");
-
-    if (!user && to.path !== '/login') {
-        hasAddedRoutes = false;
-        return next('/login');
-    }
-
-    if (user && !hasAddedRoutes) {
-        const menuDataString = sessionStorage.getItem("menu");
-
-        if (menuDataString) {
-            const menuData = JSON.parse(menuDataString);
-            store.commit('setMenu', menuData);
-
-            const modules = import.meta.glob('../components/**/*.vue');
-
-            menuData.forEach(menu => {
-                if (menu.menuclick && menu.menuComponent) {
-                    const route = {
-                        // 关键修正：子路由的 path 不应以 '/' 开头
-                        path: menu.menuclick,
-                        name: menu.menuclick,
-                        component: modules[`../components/${menu.menuComponent}`]
-                    };
-                    router.addRoute('MyHome', route);
-                }
-            });
-            hasAddedRoutes = true;
-
-            return next({ ...to, replace: true });
-        } else {
-            hasAddedRoutes = false;
-            return next('/login');
-        }
-    }
-
-    next();
-});
-
-export default router;
+export default router

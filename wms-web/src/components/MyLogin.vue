@@ -1,108 +1,163 @@
 <template>
-  <div class="loginBody">
-    <div class="loginDiv">
-      <div class="login-content">
-        <h1 class="login-title">用户登录</h1>
-        <el-form :model="loginForm" :rules="rules" ref="loginFormRef">
-          <el-form-item prop="no">
-            <el-input type="text" placeholder="请输入账号" v-model="loginForm.no" autocomplete="off"></el-input>
-          </el-form-item>
-          <el-form-item prop="password">
-            <el-input type="password" placeholder="请输入密码" v-model="loginForm.password" show-password autocomplete="off"></el-input>
-          </el-form-item>
-          <el-form-item>
-            <el-button type="primary" @click="confirm" :disabled="confirm_disabled" style="width: 100%;">确 定</el-button>
-          </el-form-item>
-        </el-form>
+  <div class="login-container">
+    <el-form
+        ref="loginFormRef"
+        :model="loginForm"
+        :rules="loginRules"
+        class="login-form"
+    >
+      <div class="title-container">
+        <h3 class="title">试题管理系统</h3>
       </div>
-    </div>
+
+      <el-form-item prop="no">
+        <el-input
+            v-model="loginForm.no"
+            placeholder="请输入账号"
+            :prefix-icon="User"
+        />
+      </el-form-item>
+
+      <el-form-item prop="password">
+        <el-input
+            v-model="loginForm.password"
+            type="password"
+            placeholder="请输入密码"
+            show-password
+            :prefix-icon="Lock"
+            @keyup.enter="handleLogin"
+        />
+      </el-form-item>
+
+      <el-button
+          :loading="loading"
+          type="primary"
+          style="width: 100%; margin-bottom: 30px"
+          @click.prevent="handleLogin"
+      >
+        登 录
+      </el-button>
+    </el-form>
   </div>
 </template>
 
 <script setup>
-// 2. 从 vue 和其他库中导入所需的函数
-import { ref, reactive, getCurrentInstance } from 'vue';
+import { ref, reactive } from 'vue';
 import { useRouter } from 'vue-router';
 import { useStore } from 'vuex';
-import { ElMessage } from 'element-plus'; // 引入Element Plus的消息提示
+import { ElMessage } from 'element-plus';
+import { User, Lock } from '@element-plus/icons-vue';
+import axios from 'axios'; // 在 Vue 3 中，我们通常在组件内直接导入 axios
 
-// 3. 获取当前组件实例、路由和Vuex store
-const { proxy } = getCurrentInstance();
+// --- 响应式数据 ---
 const router = useRouter();
 const store = useStore();
+const loginFormRef = ref(null); // 用于引用表单
+const loading = ref(false);
 
-// 4. 定义响应式状态 (等同于 Vue 2 的 data)
-const confirm_disabled = ref(false); // 使用 ref 处理基本类型
-const loginForm = reactive({ // 使用 reactive 处理对象
+const loginForm = reactive({
   no: '',
-  password: ''
+  password: '',
 });
-const rules = reactive({
+
+const loginRules = reactive({
   no: [{ required: true, message: '请输入账号', trigger: 'blur' }],
-  password: [{ required: true, message: '请输入密码', trigger: 'blur' }]
+  password: [{ required: true, message: '请输入密码', trigger: 'blur' }],
 });
 
-// 5. 创建一个 ref 来关联模板中的 el-form 实例 (等同于 this.$refs.loginForm)
-const loginFormRef = ref(null);
-
-// 6. 将 methods 中的方法转换为一个函数
-const confirm = async () => {
-  if (!loginFormRef.value) return; // 确保表单实例存在
-
-  // 使用 await 让验证逻辑更清晰
-  await loginFormRef.value.validate((valid) => {
+// --- 方法 ---
+const handleLogin = () => {
+  loginFormRef.value.validate((valid) => {
     if (valid) {
-      confirm_disabled.value = true;
-      // 7. 使用 proxy 访问全局挂载的属性
-      proxy.$axios.post('/api/user/login', loginForm).then(res => {
-        if (res.data.code === 200) {
-          sessionStorage.setItem("CurUser", JSON.stringify(res.data.data.user));
-          // 在这下面添加新的一行
-          sessionStorage.setItem("menu", JSON.stringify(res.data.data.menu));
-          store.commit("setMenu", res.data.data.menu); // 使用 store
-          router.replace('/'); // 使用 router
-        } else {
-          confirm_disabled.value = false;
-          ElMessage.error('校验失败，用户名或密码错误！'); // 使用 Element Plus 的消息提示
-        }
-      }).catch(() => {
-        confirm_disabled.value = false;
-        ElMessage.error('请求失败，请稍后再试');
-      });
+      loading.value = true;
+      // 注意：这里的 httpUrl 需要根据你的项目配置进行调整
+      const httpUrl = 'http://localhost:8090'; // 假设的后端地址
+      axios
+          .post(httpUrl + "/user/login", loginForm)
+          .then((res) => {
+            if (res.data.code === 200) {
+              // 登录成功
+              // --- 这里是修改的部分 ---
+              store.commit("setMenu", res.data.data.menu);
+              store.commit("SET_TOKEN", res.data.data.token); // 修改为大写
+              store.commit("SET_USER", res.data.data.user);   // 修改为大写
+              // --- 修改结束 ---
+
+              router.replace("/Home");
+              ElMessage.success("登录成功！");
+            } else {
+              ElMessage.error(res.data.msg);
+            }
+          })
+          .catch((err) => {
+            console.error(err);
+            ElMessage.error('登录失败，请检查网络或联系管理员');
+          })
+          .finally(() => {
+            loading.value = false;
+          });
     } else {
-      ElMessage.warning('请输入账号和密码');
+      console.log('表单验证失败');
       return false;
     }
   });
 };
 </script>
-
-<style scoped>
-.loginBody {
+<style lang="scss" scoped>
+.login-container {
+  height: 100vh;
   width: 100%;
-  height: 100%;
-  background-color: #B3C0D1;
+  overflow: hidden;
+  background-image: url('../assets/back.jpg');
+  background-size: cover;
 }
-.loginDiv {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  margin-top: -200px;
-  margin-left: -250px;
-  width: 450px;
-  height: 330px;
-  background: #fff;
-  border-radius: 5%;
+
+.login-form {
+  position: relative;
+  width: 520px;
+  max-width: 100%;
+  padding: 160px 35px 0;
+  margin: 0 auto;
+  overflow: hidden;
 }
-.login-title {
-  margin: 20px 0;
-  text-align: center;
+
+.title-container {
+  position: relative;
+  .title {
+    font-size: 26px;
+    color: #eee;
+    margin: 0 auto 40px auto;
+    text-align: center;
+    font-weight: bold;
+  }
 }
-.login-content {
-  width: 400px;
-  height: 250px;
-  position: absolute;
-  top: 25px;
-  left: 25px;
+
+// 使用 :deep() 来穿透修改 Element Plus 组件内部样式
+:deep(.el-input) {
+  height: 47px;
+  width: 100%;
+
+  .el-input__wrapper {
+    background: rgba(0, 0, 0, 0.1);
+    box-shadow: none;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 5px;
+  }
+
+  .el-input__inner {
+    background: transparent;
+    border: 0;
+    -webkit-appearance: none;
+    border-radius: 0;
+    padding: 12px 5px 12px 15px;
+    color: #eee;
+    height: 47px;
+    caret-color: #fff;
+
+    &:-webkit-autofill {
+      -webkit-box-shadow: 0 0 0 1000px rgba(0, 0, 0, 0.1) inset !important;
+      -webkit-text-fill-color: #fff !important;
+    }
+  }
 }
 </style>
