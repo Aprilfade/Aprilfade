@@ -57,6 +57,8 @@ const confirm = async () => {
       proxy.$axios.post('/api/user/login', loginForm).then(res => {
         if (res.data.code === 200) {
           sessionStorage.setItem("CurUser", JSON.stringify(res.data.data.user));
+          // 在这下面添加新的一行
+          sessionStorage.setItem("menu", JSON.stringify(res.data.data.menu));
           store.commit("setMenu", res.data.data.menu); // 使用 store
           router.replace('/'); // 使用 router
         } else {

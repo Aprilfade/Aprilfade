@@ -1,64 +1,57 @@
 <template>
   <el-menu
-      background-color="#545c64"
-      text-color="#fff"
-      active-text-color="#ffd04b"
-      style="height: 100vh; border-right: none;"
-      :default-active="route.path"
-      :collapse="props.isCollapse"
-      :collapse-transition="false"
+      class="el-menu-vertical-demo"
+      style="height: 100%; border-right: none;"
+      :default-active="activePath"
       router
+      :collapse="isCollapse"
+      :collapse-transition="false"
   >
-    <el-menu-item index="/">
-      <el-icon><home-filled /></el-icon>
-      <span>首页</span>
-    </el-menu-item>
+    <div style="height: 60px; line-height: 60px; text-align: center; font-size: 20px; font-weight: bold;">
+      <img src="../assets/logo.png" alt="" style="width: 20px; position: relative; top: 5px; right: 5px;">
+      <span v-show="!isCollapse">仓储管理</span>
+    </div>
 
-    <el-sub-menu :index="item.id + ''" v-for="item in menu" :key="item.id">
-      <template #title>
-        <el-icon><component :is="iconMap[item.menuicon]" /></el-icon>
-        <span>{{ item.menuname }}</span>
-      </template>
 
-      <el-menu-item v-for="subItem in item.children" :key="subItem.id" :index="'/' + subItem.menuclick">
-        <el-icon><component :is="iconMap[subItem.menuicon]" /></el-icon>
-        <span>{{ subItem.menuname }}</span>
+    <template v-for="menu in menuList" :key="menu.id">
+      <el-menu-item :index="'/' + menu.menuclick" v-if="!menu.children || menu.children.length === 0">
+        <el-icon><component :is="menu.menuIcon" /></el-icon>
+        <template #title>
+          <span>{{ menu.menuName }}</span>
+        </template>
       </el-menu-item>
-    </el-sub-menu>
+      <el-sub-menu :index="menu.id + ''" v-else>
+        <template #title>
+          <el-icon><component :is="menu.menuIcon" /></el-icon>
+          <span v-if="!isCollapse">{{ menu.menuName }}</span>
+        </template>
+        <el-menu-item :index="'/' + item.menuclick" v-for="item in menu.children" :key="item.id">
+          <el-icon><component :is="item.menuIcon" /></el-icon>
+          <template #title>
+            <span>{{ item.menuName }}</span>
+          </template>
+        </el-menu-item>
+      </el-sub-menu>
+    </template>
   </el-menu>
 </template>
 
 <script setup>
-import { computed } from 'vue';
+import { computed, defineProps } from 'vue';
 import { useStore } from 'vuex';
 import { useRoute } from 'vue-router';
-import { defineProps } from 'vue';
-// 3. 引入所有需要用到的图标
-import { HomeFilled, User, Box, Files, Tickets, Suitcase, Document } from '@element-plus/icons-vue';
 
-// 4. 定义一个图标映射对象
-const iconMap = {
-  'el-icon-s-custom': User,
-  'el-icon-user-solid': User,
-  'el-icon-s-goods': Box,
-  'el-icon-s-order': Files,
-  'el-icon-s-management': Suitcase,
-  'el-icon-document': Document,
-  'el-icon-tickets': Tickets
-};
-
-const store = useStore();
-const route = useRoute(); // 获取当前路由信息，用于高亮菜单
-
-// 5. 定义props，接收父组件传来的isCollapse
-const props = defineProps({
+// 关键：定义并接收来自父组件的 isCollapse 状态
+defineProps({
   isCollapse: Boolean
 });
 
-// 6. 使用 computed 从 Vuex store 中获取菜单数据
-const menu = computed(() => store.state.menu);
+const store = useStore();
+const route = useRoute();
+const menuList = computed(() => store.state.menu);
+const activePath = computed(() => route.path);
 </script>
 
 <style scoped>
-/* 可以在这里添加自定义样式 */
+/* 可以在这里添加样式 */
 </style>

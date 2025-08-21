@@ -11,7 +11,6 @@ import com.wms.entity.User;
 import com.wms.service.MenuService;
 import com.wms.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.jdbc.DataSourceTransactionManagerAutoConfiguration;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -20,8 +19,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/user")
 public class UserController {
-    @Autowired
-    private DataSourceTransactionManagerAutoConfiguration dataSourceTransactionManagerAutoConfiguration;
+
 
     @GetMapping
     public String hello(){
@@ -64,7 +62,7 @@ public class UserController {
     @PostMapping("/login")
     public Result login(@RequestBody User user){
         List<User> list = userService.lambdaQuery()
-                .eq(User::getName,user.getName())
+                .eq(User::getNo, user.getNo()) // 这里从 getName() 修改为 getNo()
                 .eq(User::getPassword,user.getPassword()).list();
 
 

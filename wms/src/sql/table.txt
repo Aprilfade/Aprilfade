@@ -21,14 +21,14 @@ COMMIT;
 
 CREATE TABLE `menu` (
   `id` int(11) NOT NULL,
-  `menuCode` varchar(8) DEFAULT NULL COMMENT '菜单编码',
-  `menuName` varchar(16) DEFAULT NULL COMMENT '菜单名字',
-  `menuLevel` varchar(2) DEFAULT NULL COMMENT '菜单级别',
-  `menuParentCode` varchar(8) DEFAULT NULL COMMENT '菜单的父code',
-  `menuClick` varchar(16) DEFAULT NULL COMMENT '点击触发的函数',
-  `menuRight` varchar(8) DEFAULT NULL COMMENT '权限 0超级管理员，1表示管理员，2表示普通用户，可以用逗号组合使用',
-  `menuComponent` varchar(200) DEFAULT NULL,
-  `menuIcon` varchar(100) DEFAULT NULL,
+  `menu_code` varchar(8) DEFAULT NULL COMMENT '菜单编码',
+  `menu_name` varchar(16) DEFAULT NULL COMMENT '菜单名字',
+  `menu_level` varchar(2) DEFAULT NULL COMMENT '菜单级别',
+  `menu_parent_code` varchar(8) DEFAULT NULL COMMENT '菜单的父code',
+  `menu_click` varchar(16) DEFAULT NULL COMMENT '点击触发的函数',
+  `menu_right` varchar(8) DEFAULT NULL COMMENT '权限 0超级管理员，1表示管理员，2表示普通用户，可以用逗号组合使用',
+  `menu_component` varchar(200) DEFAULT NULL,
+  `menu_icon` varchar(100) DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 

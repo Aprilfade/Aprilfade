@@ -9,10 +9,16 @@ import './assets/global.css'
 import axios from "axios"
 import router from './router/RouterIndex'
 import store from './store/StoreIndex'
+import * as ElementPlusIconsVue from '@element-plus/icons-vue'
 
 // 2. 使用 createApp 创建应用实例
 const app = createApp(App)
 
+
+// 全局注册所有图标
+for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
+    app.component(key, component)
+}
 // 3. 全局配置 axios，注意 API 的变化
 app.config.globalProperties.$axios = axios;
 // 在Vue3中，你还可以为axios设置一个基础URL，这样在组件中调用时就不需要写完整的URL了

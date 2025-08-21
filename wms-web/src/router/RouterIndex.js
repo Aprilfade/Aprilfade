@@ -1,47 +1,78 @@
-// 1. 从 'vue-router' 中导入新的创建函数
 import { createRouter, createWebHistory } from 'vue-router';
-import HomeIndex from '../components/HomeIndex.vue';
-import MyLogin from '../components/MyLogin.vue';
+import store from '../store/StoreIndex';
 
-// 路由配置数组基本保持不变
+// 初始路由规则
 const routes = [
     {
         path: '/',
-        name: 'HomeIndex',
-        component: HomeIndex,
-        // 动态路由的子路由将由 Vuex 添加
-        children: []
+        name: 'MyHome',
+        component: () => import('../components/MyHome.vue'),
+        redirect: '/Home', // 默认重定向到首页
+        children: [
+            {
+                path: 'Home', // 子路由路径不应以'/'开头
+                name: 'Home',
+                meta: {
+                    title: '首页'
+                },
+                component: () => import('../components/HomeIndex.vue')
+            }
+        ]
     },
     {
         path: '/login',
         name: 'MyLogin',
-        component: MyLogin
+        component: () => import('../components/MyLogin.vue')
     }
 ];
 
-// 2. 使用 createRouter 创建路由实例
 const router = createRouter({
-    // 3. 使用 createWebHistory() 来替代 'history' mode
     history: createWebHistory(import.meta.env.BASE_URL),
     routes
 });
 
-// 4. 导航守卫 (Navigation Guard) 的逻辑和 API 保持不变
+// 标记是否已经添加了动态路由
+let hasAddedRoutes = false;
+
+// 路由前置守卫
 router.beforeEach((to, from, next) => {
-    // 如果目标是登录页，直接放行
-    if (to.path === '/login') {
-        return next();
+    const user = sessionStorage.getItem("CurUser");
+
+    if (!user && to.path !== '/login') {
+        hasAddedRoutes = false;
+        return next('/login');
     }
 
-    // 检查 sessionStorage 中是否有用户信息
-    let user = sessionStorage.getItem("CurUser");
-    if (!user) {
-        // 如果没有用户信息且访问的不是登录页，则重定向到登录页
-        return next({ path: '/login' });
-    } else {
-        // 如果有用户信息，则放行
-        return next();
+    if (user && !hasAddedRoutes) {
+        const menuDataString = sessionStorage.getItem("menu");
+
+        if (menuDataString) {
+            const menuData = JSON.parse(menuDataString);
+            store.commit('setMenu', menuData);
+
+            const modules = import.meta.glob('../components/**/*.vue');
+
+            menuData.forEach(menu => {
+                if (menu.menuclick && menu.menuComponent) {
+                    const route = {
+                        // 关键修正：子路由的 path 不应以 '/' 开头
+                        path: menu.menuclick,
+                        name: menu.menuclick,
+                        component: modules[`../components/${menu.menuComponent}`]
+                    };
+                    router.addRoute('MyHome', route);
+                }
+            });
+            hasAddedRoutes = true;
+
+            return next({ ...to, replace: true });
+        } else {
+            hasAddedRoutes = false;
+            return next('/login');
+        }
     }
+
+    next();
 });
 
 export default router;

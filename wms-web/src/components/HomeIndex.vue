@@ -1,52 +1,71 @@
 <template>
-  <el-container style="height: 100vh;">
-    <el-aside :style="{ width: aside_width }" style="background-color: rgb(238, 241, 246);">
-      <MyAside :is-collapse="isCollapse"></MyAside>
-    </el-aside>
+  <div style="text-align: center; background-color: #f1f1f3; height: 100%; padding: 0; margin: 0;">
+    <h1 v-if="user" style="font-size: 50px;">{{ '欢迎你！' + user.name }}</h1>
 
-    <el-container>
-      <el-header style="text-align: right; font-size: 12px; border-bottom: 1px solid #eee;">
-        <MyHeader @doCollapse="doCollapse" :icon="icon"></MyHeader>
-      </el-header>
+    <el-descriptions v-if="user" title="个人中心" :column="2" border style="width: 90%; margin: 20px auto; text-align: center;">
+      <el-descriptions-item>
+        <template #label>
+          <div class="cell-item">
+            <el-icon><avatar /></el-icon>
+            <span>账号</span>
+          </div>
+        </template>
+        {{ user.no }}
+      </el-descriptions-item>
 
-      <el-main style="padding: 10px;">
-        <router-view/>
-      </el-main>
-    </el-container>
-  </el-container>
+      <el-descriptions-item>
+        <template #label>
+          <div class="cell-item">
+            <el-icon><iphone /></el-icon>
+            <span>电话</span>
+          </div>
+        </template>
+        {{ user.phone }}
+      </el-descriptions-item>
+
+      <el-descriptions-item>
+        <template #label>
+          <div class="cell-item">
+            <el-icon><male /></el-icon>
+            <span>性别</span>
+          </div>
+        </template>
+        <el-tag :type="user.sex === 1 ? 'primary' : 'danger'" disable-transitions>
+          {{ user.sex === 1 ? "男" : "女" }}
+        </el-tag>
+      </el-descriptions-item>
+
+      <el-descriptions-item>
+        <template #label>
+          <div class="cell-item">
+            <el-icon><tickets /></el-icon>
+            <span>角色</span>
+          </div>
+        </template>
+        <el-tag type="success" disable-transitions>
+          {{ user.roleId === 0 ? "超级管理员" : (user.roleId === 1 ? "管理员" : "用户") }}
+        </el-tag>
+      </el-descriptions-item>
+    </el-descriptions>
+
+    <DateUtils />
+  </div>
 </template>
 
 <script setup>
-// 3. 引入 vue 的 ref 和 computed，以及子组件
-import { ref, computed } from 'vue';
-import MyAside from "./MyAside.vue";
-import MyHeader from "./MyHeader.vue";
-// Element Plus 的图标需要单独引入
-import { Fold, Expand } from '@element-plus/icons-vue';
+import { ref } from 'vue';
+import DateUtils from "@/components/DateUtils.vue";
 
-// 4. 定义响应式状态 (等同于 data)
-const isCollapse = ref(false);
-
-// 5. 定义计算属性 (等同于 computed)
-const aside_width = computed(() => (isCollapse.value ? '64px' : '200px'));
-const icon = computed(() => (isCollapse.value ? Expand : Fold));
-
-// 6. 定义方法 (等同于 methods)
-const doCollapse = () => {
-  isCollapse.value = !isCollapse.value;
-};
+// 从 sessionStorage 中获取用户信息并设置为响应式数据
+const user = ref(JSON.parse(sessionStorage.getItem('CurUser')));
 </script>
 
 <style scoped>
-.el-header {
-  --el-header-padding: 0 20px; /* Element Plus 中调整 Header 内边距的方式 */
+.cell-item {
   display: flex;
   align-items: center;
 }
-.el-aside {
-  transition: width 0.3s;
-  -webkit-transition: width 0.3s;
-  -moz-transition: width 0.3s;
-  -o-transition: width 0.3s;
+.cell-item span {
+  margin-left: 8px;
 }
 </style>
