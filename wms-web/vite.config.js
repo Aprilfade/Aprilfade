@@ -1,20 +1,23 @@
 import { fileURLToPath, URL } from 'node:url'
 
 import { defineConfig } from 'vite'
-// import legacy from '@vitejs/plugin-legacy'  // <--- 第 1 处：注释掉这一行
-import vue2 from '@vitejs/plugin-vue2'
+import vue from '@vitejs/plugin-vue' // 1. 关键改动：将 vue2 插件更换为 vue (Vue 3) 插件
 
 // https://vitejs.dev/config/
 export default defineConfig({
     server: {
-        port: 8081
+        port: 8081,
+        // 你的后端代理设置，如果需要请取消注释并配置
+        // proxy: {
+        //   '/api': {
+        //     target: 'http://localhost:8090', // 你的后端服务地址
+        //     changeOrigin: true,
+        //     rewrite: (path) => path.replace(/^\/api/, '')
+        //   }
+        // }
     },
     plugins: [
-        vue2(),
-        // legacy({                              // <--- 第 2 处：注释掉这三行
-        //   targets: ['ie >= 11'],pnpm install
-        //   additionalLegacyPolyfills: ['regenerator-runtime/runtime']
-        // })
+        vue(), // 2. 关键改动：在这里使用 vue()
     ],
     resolve: {
         alias: {

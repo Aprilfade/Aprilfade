@@ -1,77 +1,67 @@
-import Vue from 'vue'
-import Vuex from 'vuex'
-import router, { resetRouter } from "../router/RouterIndex";
+// 1. 从 'vuex' 中导入新的创建函数
+import { createStore } from 'vuex';
+import router from '../router/RouterIndex';
 import createPersistedState from 'vuex-persistedstate';
 
-Vue.use(Vuex)
+// 2. 使用 createStore 创建 store 实例
+const store = createStore({
+    // state, mutations, getters 的内部逻辑保持不变
+    state: {
+        menu: []
+    },
+    mutations: {
+        setMenu(state, menuList) {
+            state.menu = menuList;
+        },
+        SET_ROUTES(state) {
+            const newRoutes = router.options.routes;
 
-// 辅助函数：将后端菜单数据转换为前端路由对象
-function menuToRoute(menu) {
-    if (!menu.menucomponent) {
-        return null;
-    }
+            state.menu.forEach(menu => {
+                if (menu.children) {
+                    menu.children.forEach(m => {
+                        // 动态添加路由
+                        const route = convert(m);
+                        newRoutes[0].children.push(route);
+                    });
+                }
+            });
+
+            // 动态添加路由到路由表中
+            router.addRoute(newRoutes[0]);
+        }
+    },
+    getters: {
+        getMenu(state) {
+            return state.menu;
+        }
+    },
+    plugins: [
+        // vuex-persistedstate 插件的用法保持不变
+        createPersistedState({
+            storage: window.sessionStorage, // 指定使用 sessionStorage
+            key: 'vuex', // 存储在 sessionStorage 中的 key
+            reducer(val) {
+                // 只持久化 menu 模块
+                return {
+                    menu: val.menu
+                };
+            }
+        })
+    ]
+});
+
+// 动态导入组件的辅助函数 (我们之前已经优化过)
+const modules = import.meta.glob('@/components/**/*.vue');
+function convert(menu) {
     let route = {
-        name: menu.menuclick,
         path: menu.menuclick,
+        name: menu.menuname,
         meta: {
             title: menu.menuname
         },
-        component: () => import('@/components/' + menu.menucomponent)
+        component: modules[`/src/components/${menu.menucomponent}.vue`]
     };
     return route;
 }
 
-export default new Vuex.Store({
-    state: {
-        menuList: [],
-        hasRoutes: false
-    },
-    mutations: {
-        setMenu(state, menuList) {
-            state.menuList = menuList;
-
-            if (state.hasRoutes) {
-                return;
-            }
-
-            const newRoutes = router.options.routes;
-            const homeRoute = newRoutes.find(route => route.path === '/home');
-            if (!homeRoute) return;
-
-            homeRoute.children = [];
-
-            homeRoute.children.push({
-                path: '',
-                name: 'homeIndex',
-                meta: { title: '首页' },
-                component: () => import('../components/HomeIndex.vue')
-            });
-
-            // **核心修正：直接遍历后端返回的扁平化 menuList 数组**
-            menuList.forEach(menu => {
-                // 不再需要检查 children
-                const route = menuToRoute(menu);
-                if (route) {
-                    homeRoute.children.push(route);
-                }
-            });
-
-            resetRouter();
-            router.addRoutes(newRoutes);
-            state.hasRoutes = true;
-        },
-        clearMenuAndRoutes(state) {
-            state.menuList = [];
-            state.hasRoutes = false;
-        }
-    },
-    getters: {
-        getMenuList(state) {
-            return state.menuList;
-        }
-    },
-    plugins: [createPersistedState({
-        key: 'vuex-wms-state',
-        paths: ['menuList', 'hasRoutes']
-    })]
-})
+export default store;

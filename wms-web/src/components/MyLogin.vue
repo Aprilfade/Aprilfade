@@ -1,132 +1,106 @@
 <template>
-  <div class="login-container">
-    <!-- 品牌标识 -->
-    <div class="logo-wrapper">
-      <img src="@/assets/logo.png" alt="仓储管理系统 Logo" class="login-logo" />
-    </div>
-
-    <!-- 登录表单 -->
-    <div class="login-form">
-      <h1>用户登录</h1>
-      <el-form :model="loginForm" label-width="80px" :rules="rules" ref="loginForm">
-        <el-form-item label="账号" prop="no">
-          <el-input v-model="loginForm.no" placeholder="请输入账号" size="small"></el-input>
-        </el-form-item>
-        <el-form-item label="密码" prop="password">
-          <el-input type="password" v-model="loginForm.password" placeholder="请输入密码" size="small"></el-input>
-        </el-form-item>
-        <el-form-item>
-          <el-button type="primary" @click="confirm" :loading="loading">确 定</el-button>
-        </el-form-item>
-      </el-form>
+  <div class="loginBody">
+    <div class="loginDiv">
+      <div class="login-content">
+        <h1 class="login-title">用户登录</h1>
+        <el-form :model="loginForm" :rules="rules" ref="loginFormRef">
+          <el-form-item prop="no">
+            <el-input type="text" placeholder="请输入账号" v-model="loginForm.no" autocomplete="off"></el-input>
+          </el-form-item>
+          <el-form-item prop="password">
+            <el-input type="password" placeholder="请输入密码" v-model="loginForm.password" show-password autocomplete="off"></el-input>
+          </el-form-item>
+          <el-form-item>
+            <el-button type="primary" @click="confirm" :disabled="confirm_disabled" style="width: 100%;">确 定</el-button>
+          </el-form-item>
+        </el-form>
+      </div>
     </div>
   </div>
 </template>
 
-<script>
-export default {
-  name: "MyLogin",
-  data(){
-    return{
-      loading: false, // <--- 添加这一行
-      confirm_disabled:false,
-      loginForm:{
-        no:'',
-        password:''
-      },
+<script setup>
+// 2. 从 vue 和其他库中导入所需的函数
+import { ref, reactive, getCurrentInstance } from 'vue';
+import { useRouter } from 'vue-router';
+import { useStore } from 'vuex';
+import { ElMessage } from 'element-plus'; // 引入Element Plus的消息提示
 
-      // 输入信息长度验证
-      rules: {
-        no: [  // 修改为 no
-          { required: true, message: '请输入账号', trigger: 'blur' }
-        ],
-        password: [
-          { required: true, message: '请输密码', trigger: 'blur' }
-        ],
-      }
+// 3. 获取当前组件实例、路由和Vuex store
+const { proxy } = getCurrentInstance();
+const router = useRouter();
+const store = useStore();
 
-    }
-  },
-  methods:{
-    // 登录后跳转到主页
-    confirm(){
-      this.confirm_disabled=true;
-      this.loading = true; // <--- 在请求前开启
-      this.$refs.loginForm.validate((valid) => {
-        if (valid) { //valid成功为true，失败为false
-          //去后台验证用户名密码，并返回token
-          this.$axios.post(this.$httpUrl+'/user/login',this.loginForm).then(res=>{
-            console.log('后端返回:',res.data);
-            if(res.data.code==200){
-              //存储
-              sessionStorage.setItem("CurUser",JSON.stringify(res.data.data.user))
+// 4. 定义响应式状态 (等同于 Vue 2 的 data)
+const confirm_disabled = ref(false); // 使用 ref 处理基本类型
+const loginForm = reactive({ // 使用 reactive 处理对象
+  no: '',
+  password: ''
+});
+const rules = reactive({
+  no: [{ required: true, message: '请输入账号', trigger: 'blur' }],
+  password: [{ required: true, message: '请输入密码', trigger: 'blur' }]
+});
 
-              console.log(res.data.data.menu)
-              this.$store.commit("setMenu",res.data.data.menu)
-              //跳转到主页
-              this.$router.replace('/home');
-            }else{
-              this.loading = false; // <--- 在请求失败后关闭
-              this.confirm_disabled=false;
-              alert('用户名或密码错误！');
-              return false;
-            }
-          });
+// 5. 创建一个 ref 来关联模板中的 el-form 实例 (等同于 this.$refs.loginForm)
+const loginFormRef = ref(null);
+
+// 6. 将 methods 中的方法转换为一个函数
+const confirm = async () => {
+  if (!loginFormRef.value) return; // 确保表单实例存在
+
+  // 使用 await 让验证逻辑更清晰
+  await loginFormRef.value.validate((valid) => {
+    if (valid) {
+      confirm_disabled.value = true;
+      // 7. 使用 proxy 访问全局挂载的属性
+      proxy.$axios.post('/api/user/login', loginForm).then(res => {
+        if (res.data.code === 200) {
+          sessionStorage.setItem("CurUser", JSON.stringify(res.data.data.user));
+          store.commit("setMenu", res.data.data.menu); // 使用 store
+          router.replace('/'); // 使用 router
         } else {
-          this.loading = false; // <--- 在验证失败后关闭
-          this.confirm_disabled=false;
-          console.log('校验失败');
-          return false;
+          confirm_disabled.value = false;
+          ElMessage.error('校验失败，用户名或密码错误！'); // 使用 Element Plus 的消息提示
         }
+      }).catch(() => {
+        confirm_disabled.value = false;
+        ElMessage.error('请求失败，请稍后再试');
       });
+    } else {
+      ElMessage.warning('请输入账号和密码');
+      return false;
     }
-  }
-}
+  });
+};
 </script>
-<style  >
-.login-container {
+
+<style scoped>
+.loginBody {
   width: 100%;
-  height: 100vh;
-  display: flex;
-  flex-direction: column;
-  justify-content: center; /* 垂直居中 */
-  align-items: center;      /* 水平居中 */
-  background: linear-gradient(to right, #088ada, #0cecec); /* 背景色渐变 */
+  height: 100%;
+  background-color: #B3C0D1;
 }
-
-
-.login-form {
-  width: 400px;
-  padding: 20px;
+.loginDiv {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  margin-top: -200px;
+  margin-left: -250px;
+  width: 450px;
+  height: 330px;
   background: #fff;
-  border-radius: 10px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
+  border-radius: 5%;
 }
-
-.login-form:hover {
-  transform: scale(1.02);
-}
-
-.login-form h1 {
-  margin-bottom: 20px;
+.login-title {
+  margin: 20px 0;
   text-align: center;
 }
-
-.el-input__inner:focus {
-  border-color: #7f00ff !important; /* 聚焦时边框颜色 */
-}
-
-.el-button--primary {
-  width: 100%;
-}
-
-.logo-wrapper {
-  margin-bottom: 10px; /* 与登录框之间留出间距 */
-}
-
-.login-logo {
-  width: 90px; /* 设置合适的宽度 */
-  height: auto; /* 保持图片比例 */
+.login-content {
+  width: 400px;
+  height: 250px;
+  position: absolute;
+  top: 25px;
+  left: 25px;
 }
 </style>

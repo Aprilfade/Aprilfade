@@ -42,7 +42,7 @@
 </template>
 
 <script>
-import DateUtils from "./DateUtils";
+import DateUtils from "./DateUtils.vue";
 export default {
   name: "MyHome",
   components: {DateUtils},

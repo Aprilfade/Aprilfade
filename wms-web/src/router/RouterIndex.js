@@ -1,37 +1,47 @@
-import VueRouter from 'vue-router';
-import MyHome from '../components/MyHome.vue';
+// 1. 从 'vue-router' 中导入新的创建函数
+import { createRouter, createWebHistory } from 'vue-router';
+import HomeIndex from '../components/HomeIndex.vue';
+import MyLogin from '../components/MyLogin.vue';
 
+// 路由配置数组基本保持不变
 const routes = [
     {
         path: '/',
-        name: 'login',
-        component: () => import('../components/MyLogin.vue')
+        name: 'HomeIndex',
+        component: HomeIndex,
+        // 动态路由的子路由将由 Vuex 添加
+        children: []
     },
     {
-        path: '/home',
-        // 注意：父级路由不设置 name，以避免 vue-router 的警告
-        component: MyHome,
-        children: [
-            // 子路由将由 StoreIndex.js 动态添加
-        ]
+        path: '/login',
+        name: 'MyLogin',
+        component: MyLogin
     }
 ];
 
-const router = new VueRouter({
-    mode: 'history',
+// 2. 使用 createRouter 创建路由实例
+const router = createRouter({
+    // 3. 使用 createWebHistory() 来替代 'history' mode
+    history: createWebHistory(import.meta.env.BASE_URL),
     routes
 });
 
-export function resetRouter() {
-    router.matcher = new VueRouter({
-        mode: 'history',
-        routes: []
-    }).matcher;
-}
+// 4. 导航守卫 (Navigation Guard) 的逻辑和 API 保持不变
+router.beforeEach((to, from, next) => {
+    // 如果目标是登录页，直接放行
+    if (to.path === '/login') {
+        return next();
+    }
 
-const VueRouterPush = VueRouter.prototype.push;
-VueRouter.prototype.push = function push(to) {
-    return VueRouterPush.call(this, to).catch(err => err);
-};
+    // 检查 sessionStorage 中是否有用户信息
+    let user = sessionStorage.getItem("CurUser");
+    if (!user) {
+        // 如果没有用户信息且访问的不是登录页，则重定向到登录页
+        return next({ path: '/login' });
+    } else {
+        // 如果有用户信息，则放行
+        return next();
+    }
+});
 
 export default router;
