@@ -1,61 +1,84 @@
-// wms-web/src/components/MyHeader.vue
-
 <template>
-  <div style="display: flex; line-height: 60px;">
-    <div>
-      <i :class="icon" style="font-size: 20px;cursor: pointer;" @click="collapse"></i>
-    </div>
-    <div style="flex: 1;text-align: center;font-size: 30px;">
-      <span>欢迎来到仓库管理系统</span>
-    </div>
+  <div>
+    <el-icon @click="doCollapse">
+      <Fold v-if="!icon" />
+      <Expand v-else />
+    </el-icon>
+    <el-breadcrumb separator="/" class="bread">
+      <el-breadcrumb-item :to="{ path: '/Home' }">首页</el-breadcrumb-item>
+      <el-breadcrumb-item v-for="(item, i) in breadList" :key="i">{{
+          item
+        }}</el-breadcrumb-item>
+    </el-breadcrumb>
     <el-dropdown>
-      <span v-if="user">{{ user.name }}</span>
-      <i class="el-icon-arrow-down" style="margin-left: 5px"></i>
-      <el-dropdown-menu slot="dropdown">
-        <el-dropdown-item @click.native="toUser">个人中心</el-dropdown-item>
-        <el-dropdown-item @click.native="logout">退出登录</el-dropdown-item>
-      </el-dropdown-menu>
+      <span class="el-dropdown-link">
+        欢迎您！{{ user.name }}
+        <el-icon class="el-icon--right"><arrow-down /></el-icon>
+      </span>
+      <template #dropdown>
+        <el-dropdown-menu>
+          <el-dropdown-item @click="toUser">个人中心</el-dropdown-item>
+          <el-dropdown-item @click="logout">退出登录</el-dropdown-item>
+        </el-dropdown-menu>
+      </template>
     </el-dropdown>
-
   </div>
 </template>
 
-<script>
-export default {
-  name: "MyHeader",
-  data(){
-    return {
-      // 修改1：初始化 user 为一个空对象，而不是尝试解析可能不存在的 sessionStorage
-      user: {}
-    }
-  },
-  props:{
-    icon:String
-  },
-  methods:{
-    toUser(){
-      console.log('to_user')
-      this.$router.push("/Home")
-    },
-    logout(){
-      console.log('logout')
-      this.$router.push("/")
-      sessionStorage.clear()
-    },
-    collapse(){
-      this.$emit('doCollapse')
-    }
-  },
-  // 修改2：在 created 钩子中安全地获取用户信息
-  created(){
-    const userStr = sessionStorage.getItem("CurUser");
-    if (userStr) {
-      this.user = JSON.parse(userStr);
-    }
-  }
-}
+<script setup>
+import { ref, computed, defineEmits } from 'vue';
+import { useRouter } from 'vue-router';
+import { Fold, Expand, ArrowDown } from '@element-plus/icons-vue';
+
+// --- 状态和变量 ---
+const icon = ref(false);
+const router = useRouter();
+
+// 从 sessionStorage 中获取用户信息
+const user = computed(() => {
+  const userStr = sessionStorage.getItem('user');
+  return userStr ? JSON.parse(userStr) : {};
+});
+
+// 计算面包屑导航列表
+const breadList = computed(() => {
+  return router.currentRoute.value.meta.bread || [];
+});
+
+// 定义组件触发的事件
+const emit = defineEmits(['doCollapse']);
+
+// --- 方法 ---
+const doCollapse = () => {
+  icon.value = !icon.value;
+  emit('doCollapse'); // 触发父组件的 doCollapse 事件
+};
+
+const toUser = () => {
+  router.push('/Home'); // 跳转到个人中心页面
+};
+
+const logout = () => {
+  sessionStorage.clear();
+  router.replace('/'); // 跳转到登录页
+};
 </script>
 
-<style scoped>
+<style scoped lang="scss">
+.el-icon {
+  font-size: 33px;
+  cursor: pointer;
+}
 
+.bread {
+  display: inline-block;
+  margin-left: 10px;
+  font-size: 20px;
+}
+
+.el-dropdown {
+  float: right;
+  line-height: 60px;
+  cursor: pointer;
+}
 </style>

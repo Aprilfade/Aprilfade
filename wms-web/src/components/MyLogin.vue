@@ -123,6 +123,7 @@ const handleLogin = () => {
 
 .title-container {
   position: relative;
+
   .title {
     font-size: 26px;
     color: #eee;

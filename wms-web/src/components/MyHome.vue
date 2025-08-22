@@ -37,10 +37,12 @@ const doCollapse = () => {
 .main-container {
   height: 100vh;
 }
+
 .main-aside {
   background-color: rgb(238, 241, 246);
   transition: width 0.3s;
 }
+
 .main-header {
   border-bottom: 1px solid #ccc;
   background-color: #B3C0D1;
