@@ -23,7 +23,7 @@ const routes = [
                 meta: {
                     title: '首页'
                 },
-                component: () => import('../components/MyMain.vue')
+                component: () => import('../components/HomeIndex.vue') // 修改到这里
             },
             // 系统管理
             {
