@@ -55,6 +55,7 @@ const props = defineProps({
 
 <style scoped>
 .el-menu {
+  height: 100%; /* 添加这一行 */
   border-right: none;
 }
 </style>

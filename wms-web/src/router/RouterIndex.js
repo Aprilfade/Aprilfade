@@ -18,31 +18,64 @@ const routes = [
         redirect: { name: 'MyMain' },
         children: [
             {
-                // 修改2：将所有子路由的 path 改为相对路径
-                path: 'MyMain',
+                path: '/Home/MyMain',
                 name: 'MyMain',
                 meta: {
                     title: '首页'
                 },
                 component: () => import('../components/MyMain.vue')
             },
+            // 系统管理
             {
-                path: 'admin/MyAdmin',
-                name: 'admin_myadmin',
+                path: '/Home/admin/MyAdmin',
+                name: 'MyAdmin',
                 meta: {
                     title: '管理员管理'
                 },
                 component: () => import('../components/admin/MyAdmin.vue')
             },
             {
-                path: 'user/MyUser',
-                name: 'user_myuser',
+                path: '/Home/user/MyUser',
+                name: 'MyUser',
                 meta: {
                     title: '用户管理'
                 },
                 component: () => import('../components/user/MyUser.vue')
             },
-            // ... 你其他的路由也需要放在这里，并确保 path 是相对的
+            // 基础数据
+            {
+                path: '/Home/storage/MyStorage',
+                name: 'MyStorage',
+                meta: {
+                    title: '仓库管理'
+                },
+                component: () => import('../components/storage/MyStorage.vue')
+            },
+            {
+                path: '/Home/goodstype/MyGoodstype',
+                name: 'MyGoodstype',
+                meta: {
+                    title: '分类管理'
+                },
+                component: () => import('../components/goodstype/MyGoodstype.vue')
+            },
+            {
+                path: '/Home/goods/MyGoods',
+                name: 'MyGoods',
+                meta: {
+                    title: '货品管理'
+                },
+                component: () => import('../components/goods/MyGoods.vue')
+            },
+            // 出入库管理
+            {
+                path: '/Home/record/MyRecord',
+                name: 'MyRecord',
+                meta: {
+                    title: '出入库管理'
+                },
+                component: () => import('../components/record/MyRecord.vue')
+            }
         ]
     }
 ]

@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
+import java.util.List;
 
 
 @RestController
@@ -63,7 +64,11 @@ public class GoodsController {
         return Result.suc(result.getRecords(),result.getTotal());
     }
     // 在 GoodsController.java 文件中添加以下方法
-
+    @GetMapping("/list")
+    public Result list(){
+        List<Goods> list = goodsService.list();
+        return Result.suc(list);
+    }
     @GetMapping("/count")
     public Result count() {
         long count = goodsService.count();
