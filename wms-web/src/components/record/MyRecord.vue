@@ -38,46 +38,48 @@
 </template>
 
 <script setup>
-import { ref, onMounted, getCurrentInstance } from 'vue';
+// 1. 从 'vue' 中移除不再需要的 getCurrentInstance
+import { ref, onMounted } from 'vue';
 import { ElMessage } from 'element-plus';
+// 2. 导入我们封装的 http 工具
+import http from '@/utils/http';
 
-const { proxy } = getCurrentInstance();
+// --- 响应式数据定义 (保持不变) ---
 const user = JSON.parse(sessionStorage.getItem('CurUser'));
-
-// 搜索参数
 const goodname = ref('');
 const storage = ref('');
 const userno = ref('');
-
-// 表格和分页
 const tableData = ref([]);
 const pageSize = ref(10);
 const pageNum = ref(1);
 const total = ref(0);
-
-// 用于格式化的辅助数据
 const goodsData = ref([]);
 const storageData = ref([]);
 const userData = ref([]);
 const goodstypeData = ref([]);
 
-// 异步加载所有需要的数据
+
+// --- 方法 ---
+
+// 3. 修改所有网络请求，将 proxy.$axios 替换为 http
 const loadData = async () => {
-  // 使用 Promise.all 并行加载下拉框所需的数据
-  await Promise.all([
-    proxy.$axios.get('/goods/list').then(res => { goodsData.value = res.data.data; }),
-    proxy.$axios.get('/storage/list').then(res => { storageData.value = res.data.data; }),
-    proxy.$axios.get('/user/list').then(res => { userData.value = res.data.data; }),
-    proxy.$axios.get('/goodstype/list').then(res => { goodstypeData.value = res.data.data; })
-  ]);
-  // 所有辅助数据加载完毕后，再加载主表格数据
-  await loadPost();
+  try {
+    await Promise.all([
+      http.get('/goods/list').then(res => { goodsData.value = res.data.data; }),
+      http.get('/storage/list').then(res => { storageData.value = res.data.data; }),
+      http.get('/user/list').then(res => { userData.value = res.data.data; }),
+      http.get('/goodstype/list').then(res => { goodstypeData.value = res.data.data; })
+    ]);
+    await loadPost();
+  } catch (error) {
+    console.error("加载辅助数据失败:", error);
+    ElMessage.error('加载下拉框数据失败');
+  }
 };
 
-// 加载主表格数据
 const loadPost = async () => {
   try {
-    const res = await proxy.$axios.post('/record/listPage', {
+    const res = await http.post('/record/listPage', { // 修改点
       pageSize: pageSize.value,
       pageNum: pageNum.value,
       param: {
@@ -99,12 +101,11 @@ const loadPost = async () => {
   }
 };
 
-// 表格列格式化函数
+
+// --- 以下方法保持不变 ---
 const formatGoods = (row) => goodsData.value.find(item => item.id === row.goods)?.name;
 const formatStorage = (row) => storageData.value.find(item => item.id === row.storage)?.name;
 const formatGoodstype = (row) => goodstypeData.value.find(item => item.id === row.goodstype)?.name;
-
-// 分页控制
 const handleSizeChange = (val) => {
   pageSize.value = val;
   pageNum.value = 1;
@@ -114,8 +115,6 @@ const handleCurrentChange = (val) => {
   pageNum.value = val;
   loadPost();
 };
-
-// 重置搜索
 const resetParam = () => {
   goodname.value = '';
   storage.value = '';

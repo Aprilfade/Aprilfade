@@ -110,10 +110,9 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, getCurrentInstance } from 'vue';
-import { ElMessage, ElMessageBox } from 'element-plus';
-
-const { proxy } = getCurrentInstance();
+import { ref, reactive, onMounted, nextTick } from 'vue';
+import { ElMessage } from 'element-plus';
+import http from '@/utils/http'; // 导入我们创建的 http 模块
 
 // 数据状态
 const tableData = ref([]);
@@ -135,20 +134,20 @@ const form = reactive({
   age: '',
   phone: '',
   sex: '0',
-  roleId: '2' // 默认为管理员
+  roleId: '1' // 管理员角色
 });
 const formRef = ref(null); // 表单引用
 
 // 方法
 const loadPost = async () => {
   try {
-    const res = await proxy.$axios.post('/user/listPageC1', {
+    const res = await http.post('/user/listPageC1', {
       pageSize: pageSize.value,
       pageNum: pageNum.value,
       param: {
         name: name.value,
         sex: sex.value,
-        roleId: '2'
+        roleId: '1' // 查询管理员
       }
     });
     if (res.data.code === 200) {
@@ -185,21 +184,20 @@ const resetForm = () => {
   }
   Object.assign(form, {
     id: '', no: '', name: '', password: '', age: '',
-    phone: '', sex: '0', roleId: '2'
+    phone: '', sex: '0', roleId: '1'
   });
 };
 
 const add = () => {
   centerDialogVisible.value = true;
-  // 使用 nextTick 在 DOM 更新后重置表单
-  proxy.$nextTick(() => {
+  nextTick(() => {
     resetForm();
   });
 };
 
 const doSave = async () => {
   try {
-    const res = await proxy.$axios.post('/user/save', form);
+    const res = await http.post('/user/save', form);
     if (res.data.code === 200) {
       ElMessage.success('操作成功！');
       centerDialogVisible.value = false;
@@ -214,7 +212,7 @@ const doSave = async () => {
 
 const doMod = async () => {
   try {
-    const res = await proxy.$axios.post('/user/update', form);
+    const res = await http.post('/user/update', form);
     if (res.data.code === 200) {
       ElMessage.success('操作成功！');
       centerDialogVisible.value = false;
@@ -244,7 +242,7 @@ const save = () => {
 
 const mod = (row) => {
   centerDialogVisible.value = true;
-  proxy.$nextTick(() => {
+  nextTick(() => {
     Object.assign(form, {
       id: row.id,
       no: row.no,
@@ -260,7 +258,7 @@ const mod = (row) => {
 
 const del = async (id) => {
   try {
-    const res = await proxy.$axios.get('/user/del?id=' + id);
+    const res = await http.get('/user/del?id=' + id);
     if (res.data.code === 200) {
       ElMessage.success('删除成功！');
       loadPost();
@@ -276,4 +274,5 @@ const del = async (id) => {
 onMounted(() => {
   loadPost();
 });
+
 </script>

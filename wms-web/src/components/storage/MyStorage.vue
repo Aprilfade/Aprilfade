@@ -65,21 +65,18 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, getCurrentInstance } from 'vue';
+// 1. 从 'vue' 中移除不再需要的 getCurrentInstance
+import { ref, reactive, onMounted, nextTick } from 'vue';
 import { ElMessage } from 'element-plus';
+// 2. 导入我们封装的 http 工具
+import http from '@/utils/http';
 
-const { proxy } = getCurrentInstance();
-
-// 搜索参数
+// --- 响应式数据定义 (保持不变) ---
 const name = ref('');
-
-// 表格和分页数据
 const tableData = ref([]);
 const pageSize = ref(10);
 const pageNum = ref(1);
 const total = ref(0);
-
-// 弹窗和表单数据
 const centerDialogVisible = ref(false);
 const formRef = ref(null);
 const form = reactive({
@@ -91,10 +88,13 @@ const rules = reactive({
   name: [{ required: true, message: '请输入仓库名', trigger: 'blur' }]
 });
 
-// 加载数据
+
+// --- 方法 ---
+
+// 3. 修改所有网络请求，将 proxy.$axios 替换为 http
 const loadPost = async () => {
   try {
-    const res = await proxy.$axios.post('/storage/listPage', {
+    const res = await http.post('/storage/listPage', { // 修改点
       pageSize: pageSize.value,
       pageNum: pageNum.value,
       param: { name: name.value }
@@ -110,50 +110,12 @@ const loadPost = async () => {
   }
 };
 
-// 分页控制
-const handleSizeChange = (val) => {
-  pageSize.value = val;
-  pageNum.value = 1; // 切换每页数量时，重置到第一页
-  loadPost();
-};
-const handleCurrentChange = (val) => {
-  pageNum.value = val;
-  loadPost();
-};
-
-// 重置
-const resetParam = () => {
-  name.value = '';
-  loadPost();
-};
-const resetForm = () => {
-  if (formRef.value) {
-    formRef.value.resetFields();
-  }
-  Object.assign(form, { id: '', name: '', remark: '' });
-};
-
-// 新增
-const add = () => {
-  centerDialogVisible.value = true;
-  proxy.$nextTick(resetForm);
-};
-
-// 修改
-const mod = (row) => {
-  centerDialogVisible.value = true;
-  proxy.$nextTick(() => {
-    Object.assign(form, row);
-  });
-};
-
-// 保存 (新增/修改)
 const save = () => {
   formRef.value.validate(async (valid) => {
     if (valid) {
       const url = form.id ? '/storage/update' : '/storage/save';
       try {
-        const res = await proxy.$axios.post(url, form);
+        const res = await http.post(url, form); // 修改点
         if (res.data.code === 200) {
           ElMessage.success('操作成功');
           centerDialogVisible.value = false;
@@ -170,10 +132,9 @@ const save = () => {
   });
 };
 
-// 删除
 const del = async (id) => {
   try {
-    const res = await proxy.$axios.get('/storage/del?id=' + id);
+    const res = await http.get('/storage/del?id=' + id); // 修改点
     if (res.data.code === 200) {
       ElMessage.success('删除成功');
       loadPost();
@@ -185,7 +146,39 @@ const del = async (id) => {
   }
 };
 
-// 生命周期钩子，在组件挂载后执行
+
+// --- 以下方法保持不变 ---
+const handleSizeChange = (val) => {
+  pageSize.value = val;
+  pageNum.value = 1;
+  loadPost();
+};
+const handleCurrentChange = (val) => {
+  pageNum.value = val;
+  loadPost();
+};
+const resetParam = () => {
+  name.value = '';
+  loadPost();
+};
+const resetForm = () => {
+  if (formRef.value) {
+    formRef.value.resetFields();
+  }
+  Object.assign(form, { id: '', name: '', remark: '' });
+};
+const add = () => {
+  centerDialogVisible.value = true;
+  nextTick(resetForm);
+};
+const mod = (row) => {
+  centerDialogVisible.value = true;
+  nextTick(() => {
+    Object.assign(form, row);
+  });
+};
+
+// 生命周期钩子
 onMounted(() => {
   loadPost();
 });

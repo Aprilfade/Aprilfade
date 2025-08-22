@@ -54,10 +54,13 @@
 
 <script setup>
 import { ref, reactive, onMounted, defineEmits } from 'vue';
-import axios from 'axios';
+// 1. 导入我们封装的 http 模块
+import http from '@/utils/http';
 
-const httpUrl = 'http://localhost:8090';
+// 2. 移除 httpUrl 常量
+// const httpUrl = 'http://localhost:8090';
 
+// --- 响应式数据定义 (保持不变) ---
 const tableData = ref([]);
 const pageSize = ref(10);
 const pageNum = ref(1);
@@ -70,6 +73,9 @@ const sexs = reactive([
 ]);
 
 const emit = defineEmits(['doSelectUser']);
+
+
+// --- 方法 ---
 
 const handleSizeChange = (val) => {
   pageNum.value = 1;
@@ -92,8 +98,9 @@ const selectCurrentChange = (val) => {
   emit("doSelectUser", val);
 };
 
+// 3. 将网络请求改为使用 http 实例
 const loadPost = () => {
-  axios.post(httpUrl + '/user/listPageC1', {
+  http.post('/user/listPageC1', {
     pageSize: pageSize.value,
     pageNum: pageNum.value,
     param: {

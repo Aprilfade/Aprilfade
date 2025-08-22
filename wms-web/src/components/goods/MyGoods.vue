@@ -114,11 +114,13 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, getCurrentInstance } from 'vue';
+// 1. 从 'vue' 中移除不再需要的 getCurrentInstance
+import { ref, reactive, onMounted, nextTick } from 'vue';
 import { ElMessage } from 'element-plus';
+// 2. 导入我们封装的 http 工具
+import http from '@/utils/http';
 
-const { proxy } = getCurrentInstance();
-
+// --- 响应式数据定义 (这部分保持不变) ---
 // 搜索参数
 const name = ref('');
 const storage = ref('');
@@ -157,10 +159,12 @@ const rules = reactive({
   ],
 });
 
-// 加载数据
+// --- 方法 ---
+
+// 3. 修改所有网络请求，将 proxy.$axios 替换为 http
 const loadPost = async () => {
   try {
-    const res = await proxy.$axios.post('/goods/listPage', {
+    const res = await http.post('/goods/listPage', { // 修改点
       pageSize: pageSize.value,
       pageNum: pageNum.value,
       param: {
@@ -181,70 +185,25 @@ const loadPost = async () => {
 };
 
 const loadStorage = async () => {
-  const res = await proxy.$axios.get('/storage/list');
+  const res = await http.get('/storage/list'); // 修改点
   if (res.data.code === 200) {
     storageData.value = res.data.data;
   }
 };
 
 const loadGoodstype = async () => {
-  const res = await proxy.$axios.get('/goodstype/list');
+  const res = await http.get('/goodstype/list'); // 修改点
   if (res.data.code === 200) {
     goodstypeData.value = res.data.data;
   }
 };
 
-// 表格格式化
-const formatStorage = (row) => storageData.value.find(item => item.id === row.storage)?.name;
-const formatGoodstype = (row) => goodstypeData.value.find(item => item.id === row.goodstype)?.name;
-
-// 分页控制
-const handleSizeChange = (val) => {
-  pageSize.value = val;
-  loadPost();
-};
-const handleCurrentChange = (val) => {
-  pageNum.value = val;
-  loadPost();
-};
-
-// 重置
-const resetParam = () => {
-  name.value = '';
-  storage.value = '';
-  goodstype.value = '';
-  loadPost();
-};
-const resetForm = () => {
-  if (formRef.value) {
-    formRef.value.resetFields();
-  }
-  Object.assign(form, {
-    id: '', name: '', storage: '', goodstype: '', count: '', remark: ''
-  });
-};
-
-// 新增
-const add = () => {
-  centerDialogVisible.value = true;
-  proxy.$nextTick(resetForm);
-};
-
-// 修改
-const mod = (row) => {
-  centerDialogVisible.value = true;
-  proxy.$nextTick(() => {
-    Object.assign(form, row);
-  });
-};
-
-// 保存 (新增/修改)
 const save = () => {
   formRef.value.validate(async (valid) => {
     if (valid) {
       const url = form.id ? '/goods/update' : '/goods/save';
       try {
-        const res = await proxy.$axios.post(url, form);
+        const res = await http.post(url, form); // 修改点
         if (res.data.code === 200) {
           ElMessage.success('操作成功');
           centerDialogVisible.value = false;
@@ -261,9 +220,8 @@ const save = () => {
   });
 };
 
-// 删除
 const del = async (id) => {
-  const res = await proxy.$axios.get('/goods/del?id=' + id);
+  const res = await http.get('/goods/del?id=' + id); // 修改点
   if (res.data.code === 200) {
     ElMessage.success('删除成功');
     loadPost();
@@ -272,13 +230,49 @@ const del = async (id) => {
   }
 };
 
+
+// --- 以下方法保持不变 ---
+const formatStorage = (row) => storageData.value.find(item => item.id === row.storage)?.name;
+const formatGoodstype = (row) => goodstypeData.value.find(item => item.id === row.goodstype)?.name;
+const handleSizeChange = (val) => {
+  pageSize.value = val;
+  loadPost();
+};
+const handleCurrentChange = (val) => {
+  pageNum.value = val;
+  loadPost();
+};
+const resetParam = () => {
+  name.value = '';
+  storage.value = '';
+  goodstype.value = '';
+  loadPost();
+};
+const resetForm = () => {
+  if (formRef.value) {
+    formRef.value.resetFields();
+  }
+  Object.assign(form, {
+    id: '', name: '', storage: '', goodstype: '', count: '', remark: ''
+  });
+};
+const add = () => {
+  centerDialogVisible.value = true;
+  nextTick(resetForm);
+};
+const mod = (row) => {
+  centerDialogVisible.value = true;
+  nextTick(() => {
+    Object.assign(form, row);
+  });
+};
+
 // 生命周期钩子
 onMounted(() => {
   loadStorage();
   loadGoodstype();
   loadPost();
 });
-
 </script>
 
 <style scoped>

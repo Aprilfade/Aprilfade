@@ -122,10 +122,13 @@
 <script setup>
 import { ref, reactive, onMounted, nextTick } from 'vue';
 import { ElMessage } from 'element-plus';
-import axios from 'axios';
+// 1. 导入我们封装的 http 模块，替换掉原有的 axios 导入
+import http from '@/utils/http';
 
-const httpUrl = 'http://localhost:8090';
+// 2. 移除 httpUrl 常量，因为 baseURL 已在 http 模块中配置
+// const httpUrl = 'http://localhost:8090';
 
+// --- 响应式数据定义 (保持不变) ---
 const tableData = ref([]);
 const pageSize = ref(10);
 const pageNum = ref(1);
@@ -149,6 +152,7 @@ const form = reactive({
   roleId: '2'
 });
 
+// --- 校验规则 (保持不变) ---
 const checkAge = (rule, value, callback) => {
   if (value > 150) {
     callback(new Error('年龄输入过大'));
@@ -157,24 +161,11 @@ const checkAge = (rule, value, callback) => {
   }
 };
 
-const checkDuplicate = (rule, value, callback) => {
-  if (form.id) {
-    return callback();
-  }
-  axios.get(httpUrl + "/user/findByNo?no=" + form.no).then(res => {
-    if (res.data.code !== 200) {
-      callback();
-    } else {
-      callback(new Error('账号已经存在'));
-    }
-  });
-};
-
 const rules = reactive({
   no: [
     { required: true, message: '请输入账号', trigger: 'blur' },
     { min: 3, max: 8, message: '长度在 3 到 8 个字符', trigger: 'blur' },
-    { validator: checkDuplicate, trigger: 'blur' }
+    // 异步校验将在 save 方法中处理或保持原样
   ],
   name: [
     { required: true, message: '请输入名字', trigger: 'blur' }
@@ -195,14 +186,38 @@ const rules = reactive({
   ]
 });
 
+// --- 方法 ---
+
+// 3. 将所有网络请求都改为使用 http 实例
+const checkDuplicate = async (callback) => {
+  if (form.id) {
+    return callback();
+  }
+  try {
+    const res = await http.get("/user/findByNo?no=" + form.no);
+    if (res.data.code !== 200) {
+      callback();
+    } else {
+      callback(new Error('账号已经存在'));
+    }
+  } catch (error) {
+    console.error(error);
+    callback(new Error('校验账号时出错'));
+  }
+};
+
 const resetForm = () => {
   if (formRef.value) {
     formRef.value.resetFields();
   }
+  Object.assign(form, {
+    id: '', no: '', name: '', password: '', age: '',
+    phone: '', sex: '0', roleId: '2'
+  });
 };
 
 const del = (id) => {
-  axios.get(httpUrl + '/user/del?id=' + id).then(res => {
+  http.get('/user/del?id=' + id).then(res => {
     if (res.data.code === 200) {
       ElMessage.success('操作成功！');
       loadPost();
@@ -226,17 +241,15 @@ const add = () => {
   centerDialogVisible.value = true;
   nextTick(() => {
     resetForm();
-    form.id = '';
   });
 };
 
 const doSave = () => {
-  axios.post(httpUrl + '/user/save', form).then(res => {
+  http.post('/user/save', form).then(res => {
     if (res.data.code === 200) {
       ElMessage.success('操作成功！');
       centerDialogVisible.value = false;
       loadPost();
-      resetForm();
     } else {
       ElMessage.error('操作失败！');
     }
@@ -244,12 +257,11 @@ const doSave = () => {
 };
 
 const doMod = () => {
-  axios.post(httpUrl + '/user/update', form).then(res => {
+  http.post('/user/update', form).then(res => {
     if (res.data.code === 200) {
       ElMessage.success('操作成功！');
       centerDialogVisible.value = false;
       loadPost();
-      resetForm();
     } else {
       ElMessage.error('操作失败！');
     }
@@ -259,13 +271,20 @@ const doMod = () => {
 const save = () => {
   formRef.value.validate((valid) => {
     if (valid) {
-      if (form.id) {
-        doMod();
+      // 对于新增操作，额外校验账号是否重复
+      if (!form.id) {
+        checkDuplicate(error => {
+          if (error) {
+            ElMessage.error(error.message);
+          } else {
+            doSave();
+          }
+        });
       } else {
-        doSave();
+        doMod();
       }
     } else {
-      console.log('error submit!!');
+      ElMessage.warning('请检查表单输入！');
       return false;
     }
   });
@@ -289,7 +308,7 @@ const resetParam = () => {
 };
 
 const loadPost = () => {
-  axios.post(httpUrl + '/user/listPageC1', {
+  http.post('/user/listPageC1', {
     pageSize: pageSize.value,
     pageNum: pageNum.value,
     param: {
@@ -302,7 +321,7 @@ const loadPost = () => {
       tableData.value = res.data.data;
       total.value = res.data.total;
     } else {
-      alert('获取数据失败');
+      ElMessage.error('获取数据失败');
     }
   });
 };
