@@ -1,4 +1,6 @@
 <script>
+import axios from 'axios';
+
 
 export default {
   name: 'MyMain',
@@ -227,7 +229,7 @@ export default {
       this.loadPost();
     },
     loadPost() {
-      this.$axios.post(this.$httpUrl + '/user/listPageC1', {
+      axios.post('http://localhost:8090/user/listPageC1', {
         pageNum: this.pageNum,
         pageSize: this.pageSize,
         param: {

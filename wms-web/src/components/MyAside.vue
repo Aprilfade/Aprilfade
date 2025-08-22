@@ -1,57 +1,63 @@
 <template>
   <el-menu
-      class="el-menu-vertical-demo"
-      style="height: 100%; border-right: none;"
-      :default-active="activePath"
-      router
+      background-color="#545c64"
+      text-color="#fff"
+      active-text-color="#ffd04b"
+      style="height: 100vh"
+      default-active="/Home"
+      @open="handleOpen"
+      @close="handleClose"
       :collapse="isCollapse"
       :collapse-transition="false"
+      router
   >
-    <div style="height: 60px; line-height: 60px; text-align: center; font-size: 20px; font-weight: bold;">
-      <img src="../assets/logo.png" alt="" style="width: 20px; position: relative; top: 5px; right: 5px;">
-      <span v-show="!isCollapse">仓储管理</span>
-    </div>
+    <el-menu-item index="/Home">
+      <i class="el-icon-s-home"></i>
+      <span slot="title">首页</span>
+    </el-menu-item>
 
+    <el-menu-item
+        v-for="(item,i) in menu"
+        :key="i"
+        :index="'/' + item.menuclick.toLowerCase()"
+        v-if="item.menuclick">
 
-    <template v-for="menu in menuList" :key="menu.id">
-      <el-menu-item :index="'/' + menu.menuclick" v-if="!menu.children || menu.children.length === 0">
-        <el-icon><component :is="menu.menuIcon" /></el-icon>
-        <template #title>
-          <span>{{ menu.menuName }}</span>
-        </template>
-      </el-menu-item>
-      <el-sub-menu :index="menu.id + ''" v-else>
-        <template #title>
-          <el-icon><component :is="menu.menuIcon" /></el-icon>
-          <span v-if="!isCollapse">{{ menu.menuName }}</span>
-        </template>
-        <el-menu-item :index="'/' + item.menuclick" v-for="item in menu.children" :key="item.id">
-          <el-icon><component :is="item.menuIcon" /></el-icon>
-          <template #title>
-            <span>{{ item.menuName }}</span>
-          </template>
-        </el-menu-item>
-      </el-sub-menu>
-    </template>
+      <i :class="item.menuicon"></i>
+      <span slot="title">{{ item.menuname }}</span>
+    </el-menu-item>
+
   </el-menu>
 </template>
 
-<script setup>
-import { computed, defineProps } from 'vue';
-import { useStore } from 'vuex';
-import { useRoute } from 'vue-router';
-
-// 关键：定义并接收来自父组件的 isCollapse 状态
-defineProps({
-  isCollapse: Boolean
-});
-
-const store = useStore();
-const route = useRoute();
-const menuList = computed(() => store.state.menu);
-const activePath = computed(() => route.path);
+<script>
+export default {
+  name: "MyAside",
+  data(){
+    return {
+      // isCollapse:false
+    }
+  },
+  computed:{
+    "menu":{
+      get(){
+        return this.$store.state.menu
+      }
+    }
+  },
+  props:{
+    isCollapse:Boolean
+  },
+  methods:{
+    handleOpen(key, keyPath) {
+      console.log(key, keyPath);
+    },
+    handleClose(key, keyPath) {
+      console.log(key, keyPath);
+    }
+  }
+}
 </script>
 
 <style scoped>
-/* 可以在这里添加样式 */
+
 </style>

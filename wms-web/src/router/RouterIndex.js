@@ -1,3 +1,5 @@
+// wms-web/src/router/RouterIndex.js
+
 import { createRouter, createWebHistory } from 'vue-router'
 import Home from '../components/MyHome.vue'
 import Login from '../components/MyLogin.vue'
@@ -12,10 +14,12 @@ const routes = [
         path: '/Home',
         name: 'home',
         component: Home,
-        redirect: '/Home/MyMain',
+        // 修改1：使用命名路由进行重定向，更可靠
+        redirect: { name: 'MyMain' },
         children: [
             {
-                path: '/Home/MyMain',
+                // 修改2：将所有子路由的 path 改为相对路径
+                path: 'MyMain',
                 name: 'MyMain',
                 meta: {
                     title: '首页'
@@ -23,7 +27,7 @@ const routes = [
                 component: () => import('../components/MyMain.vue')
             },
             {
-                path: '/admin/MyAdmin',
+                path: 'admin/MyAdmin',
                 name: 'admin_myadmin',
                 meta: {
                     title: '管理员管理'
@@ -31,20 +35,20 @@ const routes = [
                 component: () => import('../components/admin/MyAdmin.vue')
             },
             {
-                path: '/user/MyUser',
+                path: 'user/MyUser',
                 name: 'user_myuser',
                 meta: {
                     title: '用户管理'
                 },
                 component: () => import('../components/user/MyUser.vue')
             },
-            // ... 你其他的路由也需要放在这里
+            // ... 你其他的路由也需要放在这里，并确保 path 是相对的
         ]
     }
 ]
 
 const router = createRouter({
-    history: createWebHistory(), // process.env.BASE_URL 在 Vite 中不常用，通常直接用 createWebHistory()
+    history: createWebHistory(),
     routes
 })
 
