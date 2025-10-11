@@ -71,7 +71,7 @@ const animateValue = (targetRef, endValue, duration) => {
   window.requestAnimationFrame(step);
 };
 
-// 初始化图表函数
+// 初始化图
 const initCharts = () => {
   // 销毁旧实例，防止重复渲染
   if (pieChartInstance.value) {
