@@ -7,7 +7,7 @@
 </p>
 
 <p align="center">
-  <a href="mailto:你的邮箱@example.com">
+  <a href="mailto:kkicefire3@gmail.com">
     <img src="https://img.shields.io/badge/Email-Contact_Me-blue?style=flat-square&logo=gmail" alt="Email" />
   </a>
 </p>
