@@ -62,7 +62,7 @@
 **Network & DevOps**
 <p>
   <img src="https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white" />
-  <img src="https://img.shields.io/badge/Huawei_eNSP-FF0000?style=for-the-badge&logo=huawei&logoColor=white" />
+  <img src="https://img.shields.io/badge/Huawei_HCIP-FF0000?style=for-the-badge&logo=huawei&logoColor=white" />
   <img src="https://img.shields.io/badge/Wireshark-1679A7?style=for-the-badge&logo=wireshark&logoColor=white" />
   <img src="https://img.shields.io/badge/Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black" />
   <img src="https://img.shields.io/badge/Git-F05032?style=for-the-badge&logo=git&logoColor=white" />
