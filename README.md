@@ -73,7 +73,7 @@
 ### 🏆 Featured Project: EXEsystem
 
 #### 🚀 [智能在线考试与学习管理系统](https://github.com/Aprilfade/EXEsystem)
-> 我的本科毕业设计项目 - 一个功能完整的企业级在线教育平台，集成 AI 智能批改、实时知识对战、智能复习推荐等创新功能。
+>  一个功能完整的企业级在线教育平台，集成 AI 智能批改、实时知识对战、智能复习推荐等创新功能。
 
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5.4-brightgreen.svg)](https://spring.io/projects/spring-boot)
